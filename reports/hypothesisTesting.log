@@ -1,0 +1,91 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/jupyter_cache/executors/utils.py", line 51, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/nbclient/client.py", line 1204, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+  File "/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/nbclient/util.py", line 84, in wrapped
+    return just_run(coro(*args, **kwargs))
+  File "/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/nbclient/util.py", line 62, in just_run
+    return loop.run_until_complete(coro)
+  File "/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/asyncio/base_events.py", line 647, in run_until_complete
+    return future.result()
+  File "/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/nbclient/client.py", line 663, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/nbclient/client.py", line 965, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/nbclient/client.py", line 862, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+### F-test {#sec:Ftest}
+
+The $F$-test is used to test whether the variances of two samples with
+size $n_{1}$ and $n_{2}$, respectively, are compatible. Because the true
+variances are not known, the sample variances $V_{1}$ and $V_{2}$ are
+used to build the ratio $F = \frac{V_{1}}{V_{2}}$. Recalling the
+definition of the sample variance, we can write:
+$$F= \frac{V_{1}}{V_{2}}=\frac{\frac{1}{n_{1}-1}\sum_{i=1}^{n_{1}}(x_{1_{i}}-\bar{x}_{1})^{2}}{\frac{1}{n_{2}-1}\sum_{i=1}^{n_{2}}(x_{2_{i}}-\bar{x}_{2})^{2}}$$
+(by convention the bigger sample variance is at the numerator, such that
+$F \geq 1$). Intuitively the ratio will be close to 1 if the two
+variances are similar, while it will go to a large value if they are
+not. When you divide the variance by $\sigma^2$ you obtain a random
+variable which is distributed as a $\chi^2$ with $N-1$ d.o.f. Given that
+the random variable $F$ is the ratio of two such variables, the
+$\sigma^2$ cancels and we are left with the ratio of two $\chi^2$
+distributions with $f_1 = N_1-1$ d.o.f. for the numerator and
+$f_2=N_2-1$ d.o.f. for the denominator.\
+The variable $F$ follows the $F$-distribution with $f_1$ and $f_2$
+degrees of freedom: $F(f_{1},f_{2})$:
+$$P(F) = \frac{\Gamma((f_1+f_2)/2)}{\Gamma(f_1/2)\Gamma(f_2/2)}\sqrt{f_1^{f_1} f_2^{f_2}}\frac{F^{f_1/2-1}}{(f_1+f_2F)^{(f_1+f_2)/2}}$$
+For large numbers, the variable $$Z  = \frac{1}{2} \log{F}$$ converges
+to a Gaussian distribution with mean $\frac{1}{2}(1/f_2-1/f_1)$ and
+variance $\frac{1}{2}(1/f_2+1/f_1)$. In any case you can test the
+compatibility by using e.g. the `ROOT` function
+`TMath::fdistribution_pdf`.\
+\
+**Example** Background model for the $H\to \gamma\gamma$ search: The
+collected diphoton events are divided in several categories (based on
+resolution and S/B to optimize the analysis sensitivity). Once a model
+for the background is chosen (e.g. a polynomial) the number of d.o.f.
+for that model (e.g. the order of the polynomial) can be chosen using an
+F-test. The main idea is gradually increase the number of d.o.f. until
+you don't see any decrease in the variance (see snapshot of the text
+here below).
+
+![image](Section8Bilder/FtestHgg.png){#fig:FtestHgg width="100%"}
+
+[\[fig:FtestHgg\]]{#fig:FtestHgg label="fig:FtestHgg"}
+
+\
+\
+
+::: {#hypo2}
+              $H_0$                         $H_1$                              Test Statistic                             Rejection Region                                                    Comment
+  ----------------------------- ----------------------------- ------------------------------------------------- ------------------------------------- ---------------------------------------------------------------------------------------
+                                                                                                                                                      
+     $\mu_1-\mu_2\le \delta$       $\mu_1 -\mu_2 >\delta$       $\frac{\bar{x_1}-\bar{x_2}-\delta}{\sigma_d}$          $(u_{1-\alpha};\infty)$                              $\bar{x_i}$: arithmetic mean of sample $i$
+     $\mu_1-\mu_2\ge \delta$       $\mu_1 -\mu_2 <\delta$       $\frac{\bar{x_1}-\bar{x_2}-\delta}{\sigma_d}$         $(-\infty;-u_{1-\alpha})$                        $\sigma_d:=\frac{\sigma_1}{n_1}+\frac{\sigma_2}{n_2}$
+      $\mu_1-\mu_2=\delta$        $\mu_1 -\mu_2 \ne\delta$     $\frac{|\bar{x_1}-\bar{x_2}-\delta|}{\sigma_d}$        $(u_{1-\alpha/2};\infty)$       
+                                                                                                                                                      
+     $\mu_1-\mu_2\le \delta$       $\mu_1 -\mu_2 >\delta$         $\frac{\bar{x_1}-\bar{x_2}-\delta}{S_d}$            $(t_{f;1-\alpha};\infty)$        $S_d=\sqrt{\frac{(n_1-1)S_1^2+(n_2-1)S_2^2}{n_1+n_2-2}}\sqrt{\frac{n_1+n_2}{n_1n_2}}$
+     $\mu_1-\mu_2\ge \delta$       $\mu_1 -\mu_2 <\delta$         $\frac{\bar{x_1}-\bar{x_2}-\delta}{S_d}$           $(-\infty;-t_{f;1-\alpha})$                                           $f=n_1+n_2-2$
+      $\mu_1-\mu_2=\delta$        $\mu_1 -\mu_2 \ne\delta$       $\frac{|\bar{x_1}-\bar{x_2}-\delta|}{S_d}$          $(t_{f;1-\alpha/2};\infty)$                                Calculate by non-central $t$-dist.
+                                                                                                                                                      
+   $\sigma_1^2 \le \sigma^2_2$    $\sigma_1^2 > \sigma^2_2$                     $S_1^2/S_2^2$                    $A_1=(F_{N_1;N_2;1-\alpha};\infty)$                                        $N_i=n_i-1$
+   $\sigma_1^2\ge \sigma^2_2$     $\sigma_1^2 < \sigma^2_2$                     $S_1^2/S_2^2$                       $A_2=(0;F_{N_1;N_2;\alpha})$      
+     $\sigma_1^2=\sigma^2_2$     $\sigma_1^2 \ne \sigma^2_2$                    $S_1^2/S_2^2$                         $A_1 \, \text{and} \,A_2$       
+
+  : [\[hypo2\]]{#hypo2 label="hypo2"}Summary of the hypothesis tests for
+  the two-sample problem.
+:::
+
+      
+------------------
+
+[0;36m  Cell [0;32mIn[1], line 3[0;36m[0m
+[0;31m    The $F$-test is used to test whether the variances of two samples with[0m
+[0m        ^[0m
+[0;31mSyntaxError[0m[0;31m:[0m invalid syntax
+
+SyntaxError: invalid syntax (2479618015.py, line 3)
+
